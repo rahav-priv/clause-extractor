@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -23,7 +23,15 @@ from pdf_parser import extract_text_from_pdf
 Base.metadata.create_all(bind=engine)
 
 # ── App ──────────────────────────────────────────────────────────────────────
-app = FastAPI(title="Contract Intelligence API", version="1.0.0")
+app = FastAPI(
+    title="Contract Intelligence API",
+    version="1.0.0",
+    description=(
+        "Extracts and classifies clauses from legal contracts using Claude AI. "
+        "Upload a PDF to receive a structured breakdown of contract type, clauses, and entities. "
+        "Interactive docs available at /docs."
+    ),
+)
 
 PORT = int(os.getenv("CLAUSE_EXTRACTOR_PORT", 6363))
 
@@ -104,7 +112,7 @@ class DeleteResponse(BaseModel):
 
 
 # ── Serialisers ──────────────────────────────────────────────────────────────
-def _j(val: str | None) -> list:
+def _parse_json_list(val: str | None) -> list:
     """Safely parse a JSON-encoded list column."""
     if not val:
         return []
@@ -114,7 +122,7 @@ def _j(val: str | None) -> list:
         return []
 
 
-def _jv(val: str | None):
+def _parse_json_value(val: str | None):
     """Safely parse a JSON-encoded value column."""
     if val is None:
         return None
@@ -138,10 +146,10 @@ def entity_dict(e: Entity) -> dict:
     return {
         "id": e.id,
         "entity_name": e.entity_name,
-        "value": _jv(e.value_json),
+        "value": _parse_json_value(e.value_json),
         "confidence": e.confidence,
-        "evidence": _j(e.evidence),
-        "ambiguity_flags": _j(e.ambiguity_flags),
+        "evidence": _parse_json_list(e.evidence),
+        "ambiguity_flags": _parse_json_list(e.ambiguity_flags),
     }
 
 
@@ -152,8 +160,8 @@ def clause_dict(cl: Clause) -> dict:
         "span_start": cl.span_start,
         "span_end": cl.span_end,
         "confidence": cl.confidence,
-        "evidence": _j(cl.evidence),
-        "ambiguity_flags": _j(cl.ambiguity_flags),
+        "evidence": _parse_json_list(cl.evidence),
+        "ambiguity_flags": _parse_json_list(cl.ambiguity_flags),
         "entities": [entity_dict(e) for e in cl.entities],
     }
 
@@ -166,17 +174,24 @@ def contract_full(c: Contract) -> dict:
         "raw_text": c.raw_text,
         "contract_type": c.contract_type,
         "contract_type_confidence": c.contract_type_confidence,
-        "contract_type_evidence": _j(c.contract_type_evidence),
-        "contract_type_ambiguity_flags": _j(c.contract_type_ambiguity_flags),
+        "contract_type_evidence": _parse_json_list(c.contract_type_evidence),
+        "contract_type_ambiguity_flags": _parse_json_list(c.contract_type_ambiguity_flags),
         "clauses": [clause_dict(cl) for cl in c.clauses],
     }
 
 
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+
 # ── Routes ────────────────────────────────────────────────────────────────────
-@app.get("/api/extractions", response_model=PaginatedExtractionsResponse)
+@app.get(
+    "/api/extractions",
+    response_model=PaginatedExtractionsResponse,
+    summary="List all contracts",
+    description="Returns a paginated list of all uploaded contracts with their metadata.",
+)
 def list_extractions(
-    page: int = 1,
-    limit: int = 20,
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Results per page"),
     db: Session = Depends(get_db),
 ):
     offset = (page - 1) * limit
@@ -197,7 +212,13 @@ def list_extractions(
     }
 
 
-@app.get("/api/extractions/{document_id}", response_model=ContractFullResponse)
+@app.get(
+    "/api/extractions/{document_id}",
+    response_model=ContractFullResponse,
+    summary="Get a contract with its clauses",
+    description="Returns the full contract including raw text, all extracted clauses, and entities.",
+    responses={404: {"description": "Contract not found"}},
+)
 def get_extraction(document_id: int, db: Session = Depends(get_db)):
     c = db.query(Contract).filter(Contract.id == document_id).first()
     if not c:
@@ -205,7 +226,19 @@ def get_extraction(document_id: int, db: Session = Depends(get_db)):
     return contract_full(c)
 
 
-@app.post("/api/extract", status_code=201, response_model=ContractFullResponse)
+@app.post(
+    "/api/extract",
+    status_code=201,
+    response_model=ContractFullResponse,
+    summary="Upload and extract a contract",
+    description="Accepts a PDF file, extracts its text, classifies clauses using Claude, and persists the results.",
+    responses={
+        400: {"description": "Unsupported file type"},
+        413: {"description": "File too large (max 20 MB)"},
+        422: {"description": "PDF could not be parsed or contains no extractable text"},
+        500: {"description": "Claude extraction error"},
+    },
+)
 async def extract_contract(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -219,6 +252,9 @@ async def extract_contract(
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
     file_bytes = await file.read()
+
+    if len(file_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File too large (max 20 MB)")
 
     # Extract text
     try:
@@ -286,7 +322,13 @@ async def extract_contract(
     return contract_full(contract)
 
 
-@app.delete("/api/extractions/{document_id}", response_model=DeleteResponse)
+@app.delete(
+    "/api/extractions/{document_id}",
+    response_model=DeleteResponse,
+    summary="Delete a contract",
+    description="Permanently deletes a contract and all its associated clauses and entities.",
+    responses={404: {"description": "Contract not found"}},
+)
 def delete_extraction(document_id: int, db: Session = Depends(get_db)):
     c = db.query(Contract).filter(Contract.id == document_id).first()
     if not c:

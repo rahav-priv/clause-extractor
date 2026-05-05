@@ -18,6 +18,8 @@ load_dotenv(_ENV_FILE, override=True)
 
 MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
 
+_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
 CONTRACT_TYPES = [
     "NDA", "MSA", "SOW", "Purchasing", "Employment", "Contractor",
     "SaaS/License", "DPA", "Partnership", "Other",
@@ -222,8 +224,7 @@ def extract_clauses(contract_text: str) -> dict:
     span_start / span_end are exact character offsets from the pre-parser —
     they always cover a complete paragraph, never split mid-sentence.
     """
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
+    if not os.getenv("ANTHROPIC_API_KEY"):
         raise ValueError(
             "ANTHROPIC_API_KEY is not set. "
             "Add it to the .env file in the project root."
@@ -233,9 +234,7 @@ def extract_clauses(contract_text: str) -> dict:
     sections = _parse_sections(contract_text)
     section_map = {s["index"]: s for s in sections}
 
-    client = anthropic.Anthropic(api_key=api_key)
-
-    message = client.messages.create(
+    message = _client.messages.create(
         model=MODEL,
         max_tokens=4096,
         system=SYSTEM_PROMPT,
