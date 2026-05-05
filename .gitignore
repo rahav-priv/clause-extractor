@@ -17,3 +17,6 @@ build-annotation-guide.js
 log
 *.db
 data/
+
+# Local tooling
+.claude/

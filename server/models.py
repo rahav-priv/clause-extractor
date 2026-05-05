@@ -23,7 +23,7 @@ class Clause(Base):
     __tablename__ = "clauses"
 
     id = Column(Integer, primary_key=True, index=True)
-    contract_id = Column(Integer, ForeignKey("contracts.id"), nullable=False)
+    contract_id = Column(Integer, ForeignKey("contracts.id"), nullable=False, index=True)
     clause_type = Column(String, nullable=False)
     span_start = Column(Integer, nullable=True)
     span_end = Column(Integer, nullable=True)
@@ -39,7 +39,7 @@ class Entity(Base):
     __tablename__ = "entities"
 
     id = Column(Integer, primary_key=True, index=True)
-    clause_id = Column(Integer, ForeignKey("clauses.id"), nullable=False)
+    clause_id = Column(Integer, ForeignKey("clauses.id"), nullable=False, index=True)
     entity_name = Column(String, nullable=False)
     value_json = Column(Text, nullable=True)      # JSON-encoded value
     confidence = Column(Float, nullable=True)

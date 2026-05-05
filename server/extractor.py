@@ -18,9 +18,11 @@ load_dotenv(_ENV_FILE, override=True)
 
 MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
 
+_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
 CONTRACT_TYPES = [
     "NDA", "MSA", "SOW", "Purchasing", "Employment", "Contractor",
-    "SaaS/License", "DPA", "Partnership", "Other",
+    "SaaS/License", "DPA", "Partnership", "Unknown_Type",
 ]
 
 CLAUSE_TYPES = [
@@ -52,7 +54,7 @@ CLAUSE_TYPES = [
     "Remedies", "Injunctive Relief",
     # Boilerplate (present in almost every contract)
     "Entire Agreement", "Amendment", "Severability", "Notices", "Assignment", "Waiver",
-    "Other",
+    "Unknown_Type",
 ]
 
 SYSTEM_PROMPT = (
@@ -197,8 +199,8 @@ RULES:
 4. Do NOT include sections that are not clauses — document titles
    (e.g. "NON-DISCLOSURE AGREEMENT (NDA)"), signature blocks, blank separators, or any text
    that does not itself impose a rule, right, obligation, or condition.
-5. Use "Other" ONLY for sections that ARE clauses (meet rule 3) but do not match any of the
-   listed clause types. Do not use "Other" for non-clause text — omit those sections entirely.
+5. Use "Unknown_Type" ONLY for sections that ARE clauses (meet rule 3) but do not match any of the
+   listed clause types. Do not use "Unknown_Type" for non-clause text — omit those sections entirely.
 6. Each section should appear at most once in the clauses list.
 7. confidence is your estimated probability (0.0–1.0) that the label is correct.
 8. evidence must be 1–3 phrases copied verbatim (or near-verbatim) from the contract.
@@ -222,8 +224,7 @@ def extract_clauses(contract_text: str) -> dict:
     span_start / span_end are exact character offsets from the pre-parser —
     they always cover a complete paragraph, never split mid-sentence.
     """
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
+    if not os.getenv("ANTHROPIC_API_KEY"):
         raise ValueError(
             "ANTHROPIC_API_KEY is not set. "
             "Add it to the .env file in the project root."
@@ -233,9 +234,7 @@ def extract_clauses(contract_text: str) -> dict:
     sections = _parse_sections(contract_text)
     section_map = {s["index"]: s for s in sections}
 
-    client = anthropic.Anthropic(api_key=api_key)
-
-    message = client.messages.create(
+    message = _client.messages.create(
         model=MODEL,
         max_tokens=4096,
         system=SYSTEM_PROMPT,
