@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contract-intelligence-output-v1",
+  "title": "Contract Intelligence — Model Output Schema",
+  "description": "Full output schema for the Contract Intelligence classification and extraction model. Three debugging fields (confidence, evidence, ambiguity_flags) are attached at every classification level but are never exposed in the product UI.",
+  "type": "object",
+  "required": ["contract_type", "clauses"],
+  "properties": {
+
+    "contract_type": {
+      "description": "Level 1 — Document-level contract type classification.",
+      "type": "object",
+      "required": ["label", "confidence", "evidence", "ambiguity_flags"],
+      "properties": {
+        "label": {
+          "description": "Predicted contract type.",
+          "type": "string",
+          "enum": ["NDA", "MSA", "SOW", "Purchasing", "Employment", "Contractor", "SaaS/License", "DPA", "Partnership", "Other"]
+        },
+        "confidence": {
+          "description": "Raw softmax probability for the predicted label. Range 0.0–1.0. Not calibrated — use for relative comparison and routing only.",
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "evidence": {
+          "description": "1–3 verbatim or near-verbatim phrases from the source document that justify the assigned label.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": { "type": "string", "minLength": 3 }
+        },
+        "ambiguity_flags": {
+          "description": "0–2 plain-text reasons why an alternative label could be argued. Each entry names the alternative label and the reason. Empty array when the classification is clear.",
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "clauses": {
+      "description": "Level 2 — All identified clauses in the document.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["clause_type", "span", "confidence", "evidence", "ambiguity_flags", "entities"],
+        "properties": {
+          "clause_type": {
+            "description": "Predicted clause type from the taxonomy.",
+            "type": "string",
+            "enum": [
+              "Parties", "Agreement Date", "Effective Date", "Expiration Date",
+              "Purpose", "Scope of Services", "Statements of Work", "Delivery",
+              "Governing Law", "Payment Terms", "Price Restrictions", "Most Favored Nation",
+              "Renewal Term", "Termination for Convenience", "Post-Termination Services",
+              "Indemnification", "Cap on Liability", "Uncapped Liability", "Warranties", "Force Majeure",
+              "Confidentiality / NDA",
+              "Definition of Confidential Information", "Exclusions from Confidential Information", "Obligations of Receiving Party",
+              "Data Privacy / GDPR",
+              "IP Ownership Assignment", "License Grant", "Source Code Escrow",
+              "Non-Compete", "No-Solicit of Employees",
+              "Dispute Resolution", "Change of Control", "Audit Rights", "SLA / Service Levels",
+              "Remedies", "Injunctive Relief",
+              "Entire Agreement", "Amendment", "Severability", "Notices", "Assignment", "Waiver",
+              "Other"
+            ]
+          },
+          "span": {
+            "description": "Character offsets [start, end] of the clause in the source document text.",
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "confidence": {
+            "description": "Raw softmax probability for the predicted clause type. Not calibrated.",
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "evidence": {
+            "description": "1–3 verbatim or near-verbatim phrases from the clause text that justify the assigned clause type.",
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": { "type": "string", "minLength": 3 }
+          },
+          "ambiguity_flags": {
+            "description": "0–2 reasons why an alternative clause type could be argued. Empty array when the classification is clear.",
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 2,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "entities": {
+            "description": "Level 3 — Structured entities extracted from this clause. Keys are entity names; values are entity objects.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/entity"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+
+  },
+  "additionalProperties": false,
+
+  "$defs": {
+    "entity": {
+      "description": "A single extracted entity value plus its debugging fields.",
+      "type": "object",
+      "required": ["value", "confidence", "evidence", "ambiguity_flags"],
+      "properties": {
+        "value": {
+          "description": "The normalized entity value. Type depends on the entity (string, number, object, or null).",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "object" },
+            { "type": "null" }
+          ]
+        },
+        "confidence": {
+          "description": "Mean token probability over the extracted span. For entity extraction, a low span confidence with a high clause confidence indicates uncertain entity boundary.",
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "evidence": {
+          "description": "1–3 verbatim phrases from the source text that support this entity value.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "ambiguity_flags": {
+          "description": "0–2 reasons why the entity value or boundary might be wrong. Empty array when extraction is unambiguous.",
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+
+  "examples": [
+    {
+      "contract_type": {
+        "label": "MSA",
+        "confidence": 0.94,
+        "evidence": [
+          "master services agreement governs all services",
+          "references statements of work",
+          "order of precedence clause present"
+        ],
+        "ambiguity_flags": []
+      },
+      "clauses": [
+        {
+          "clause_type": "Payment Terms",
+          "span": [1420, 1695],
+          "confidence": 0.91,
+          "evidence": [
+            "monthly fee of $15,000",
+            "due within 30 days of invoice"
+          ],
+          "ambiguity_flags": [
+            "Could be Minimum Commitment: clause also states a minimum annual spend of $120,000"
+          ],
+          "entities": {
+            "amount": {
+              "value": { "amount": 15000, "currency": "USD", "frequency": "monthly" },
+              "confidence": 0.97,
+              "evidence": ["$15,000 USD"],
+              "ambiguity_flags": []
+            },
+            "due_date_rule": {
+              "value": "net-30",
+              "confidence": 0.93,
+              "evidence": ["30 days of invoice"],
+              "ambiguity_flags": []
+            }
+          }
+        },
+        {
+          "clause_type": "Cap on Liability",
+          "span": [4210, 4490],
+          "confidence": 0.88,
+          "evidence": [
+            "aggregate liability shall not exceed",
+            "fees paid in the preceding twelve months"
+          ],
+          "ambiguity_flags": [],
+          "entities": {
+            "cap_type": {
+              "value": "formula",
+              "confidence": 0.92,
+              "evidence": ["fees paid in the preceding twelve months"],
+              "ambiguity_flags": []
+            },
+            "cap_formula": {
+              "value": "fees_paid_preceding_12_months",
+              "confidence": 0.89,
+              "evidence": ["fees paid in the preceding twelve months"],
+              "ambiguity_flags": [
+                "Could be 24 months: agreement uses 'preceding year' in other sections which may mean a different period"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

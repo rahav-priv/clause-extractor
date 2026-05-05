@@ -1,0 +1,733 @@
+{
+  "version": "1.0",
+  "sources": ["CUAD v1", "WorldCC Most Negotiated Terms 2022", "Ironclad", "Agiloft OOTB", "Sirion benchmark"],
+
+  "contractTypes": [
+    { "id": "nda",         "label": "NDA",                          "fullName": "Non-Disclosure Agreement" },
+    { "id": "msa",         "label": "MSA",                          "fullName": "Master Service Agreement" },
+    { "id": "sow",         "label": "SOW",                          "fullName": "Statement of Work",              "note": "child of MSA" },
+    { "id": "purchasing",  "label": "Purchasing",                   "fullName": "Purchasing / Procurement Agreement" },
+    { "id": "employment",  "label": "Employment",                   "fullName": "Employment Agreement" },
+    { "id": "contractor",  "label": "Contractor",                   "fullName": "Independent Contractor Agreement" },
+    { "id": "saas",        "label": "SaaS / License",               "fullName": "SaaS / Software License Agreement" },
+    { "id": "dpa",         "label": "DPA",                          "fullName": "Data Processing Agreement" },
+    { "id": "partnership", "label": "Partnership",                  "fullName": "Partnership / Teaming Agreement" }
+  ],
+
+  "clauseGroups": [
+    {
+      "id": "identity",
+      "label": "Identity & Dates",
+      "clauses": [
+        {
+          "id": "parties",
+          "label": "Parties",
+          "source": "CUAD",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "core", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "agreement_date",
+          "label": "Agreement Date",
+          "source": "CUAD",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "core", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "effective_date",
+          "label": "Effective Date",
+          "source": "CUAD",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "expiration_date",
+          "label": "Expiration Date",
+          "source": "CUAD",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "core", "purchasing": "core",
+            "employment": "optional", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "governing_law",
+          "label": "Governing Law",
+          "source": "CUAD",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "scope",
+      "label": "Purpose & Scope",
+      "clauses": [
+        {
+          "id": "purpose",
+          "label": "Purpose",
+          "source": "Added",
+          "presence": {
+            "nda": "core", "msa": "optional", "sow": "optional", "purchasing": "none",
+            "employment": "none", "contractor": "none", "saas": "none",
+            "dpa": "optional", "partnership": "optional"
+          }
+        },
+        {
+          "id": "scope_of_services",
+          "label": "Scope of Services",
+          "source": "Added",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "core", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "statements_of_work",
+          "label": "Statements of Work",
+          "source": "Added",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "none", "purchasing": "none",
+            "employment": "none", "contractor": "none", "saas": "none",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "delivery",
+          "label": "Delivery",
+          "source": "Added",
+          "note": "Covers delivery logistics, location, schedule, and risk of loss transfer",
+          "presence": {
+            "nda": "none", "msa": "none", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "none", "saas": "none",
+            "dpa": "none", "partnership": "none"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "commercial",
+      "label": "Commercial Terms",
+      "clauses": [
+        {
+          "id": "payment_terms",
+          "label": "Payment Terms",
+          "source": "Added (CUAD gap)",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "core", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "price_restrictions",
+          "label": "Price Restrictions",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "optional", "saas": "optional",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "minimum_commitment",
+          "label": "Minimum Commitment",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "none", "saas": "optional",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "volume_restriction",
+          "label": "Volume Restriction",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "optional",
+            "employment": "none", "contractor": "none", "saas": "optional",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "revenue_profit_sharing",
+          "label": "Revenue / Profit Sharing",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "optional",
+            "employment": "optional", "contractor": "none", "saas": "none",
+            "dpa": "none", "partnership": "core"
+          }
+        },
+        {
+          "id": "most_favored_nation",
+          "label": "Most Favored Nation",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "optional",
+            "employment": "none", "contractor": "none", "saas": "optional",
+            "dpa": "none", "partnership": "optional"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "duration",
+      "label": "Duration & Exit",
+      "clauses": [
+        {
+          "id": "renewal_term",
+          "label": "Renewal Term",
+          "source": "CUAD",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "none", "purchasing": "core",
+            "employment": "optional", "contractor": "optional", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "notice_terminate_renewal",
+          "label": "Notice Period to Terminate Renewal",
+          "source": "CUAD",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "none", "purchasing": "core",
+            "employment": "optional", "contractor": "optional", "saas": "core",
+            "dpa": "optional", "partnership": "optional"
+          }
+        },
+        {
+          "id": "termination_convenience",
+          "label": "Termination for Convenience",
+          "source": "CUAD",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "post_termination_services",
+          "label": "Post-Termination Services",
+          "source": "CUAD",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "optional", "purchasing": "optional",
+            "employment": "optional", "contractor": "optional", "saas": "optional",
+            "dpa": "core", "partnership": "optional"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "liability",
+      "label": "Liability & Risk",
+      "clauses": [
+        {
+          "id": "indemnification",
+          "label": "Indemnification",
+          "source": "Added (CUAD gap)",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "optional", "contractor": "core", "saas": "core",
+            "dpa": "optional", "partnership": "core"
+          }
+        },
+        {
+          "id": "cap_on_liability",
+          "label": "Cap on Liability",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "none", "purchasing": "core",
+            "employment": "none", "contractor": "core", "saas": "core",
+            "dpa": "optional", "partnership": "optional"
+          }
+        },
+        {
+          "id": "uncapped_liability",
+          "label": "Uncapped Liability",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "optional",
+            "employment": "none", "contractor": "optional", "saas": "optional",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "liquidated_damages",
+          "label": "Liquidated Damages",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "optional", "saas": "optional",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "insurance",
+          "label": "Insurance",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "none", "purchasing": "core",
+            "employment": "none", "contractor": "core", "saas": "none",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "warranty_duration",
+          "label": "Warranty Duration",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "optional", "saas": "core",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "warranties",
+          "label": "Warranties",
+          "source": "Added",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "optional", "saas": "core",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "force_majeure",
+          "label": "Force Majeure",
+          "source": "Added (CUAD gap)",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "optional", "saas": "optional",
+            "dpa": "none", "partnership": "optional"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "confidentiality",
+      "label": "Confidentiality & Data",
+      "clauses": [
+        {
+          "id": "confidentiality",
+          "label": "Confidentiality / NDA",
+          "source": "CUAD",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "definition_confidential_info",
+          "label": "Definition of Confidential Information",
+          "source": "Added",
+          "presence": {
+            "nda": "core", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "optional", "contractor": "optional", "saas": "none",
+            "dpa": "core", "partnership": "none"
+          }
+        },
+        {
+          "id": "exclusions_confidential_info",
+          "label": "Exclusions from Confidential Information",
+          "source": "Added",
+          "presence": {
+            "nda": "core", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "optional", "contractor": "optional", "saas": "none",
+            "dpa": "optional", "partnership": "none"
+          }
+        },
+        {
+          "id": "obligations_receiving_party",
+          "label": "Obligations of Receiving Party",
+          "source": "Added",
+          "presence": {
+            "nda": "core", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "optional", "contractor": "optional", "saas": "none",
+            "dpa": "core", "partnership": "none"
+          }
+        },
+        {
+          "id": "data_privacy",
+          "label": "Data Privacy / GDPR",
+          "source": "Added (CUAD gap)",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "optional",
+            "employment": "core", "contractor": "optional", "saas": "core",
+            "dpa": "core", "partnership": "none"
+          }
+        },
+        {
+          "id": "non_disparagement",
+          "label": "Non-Disparagement",
+          "source": "CUAD",
+          "presence": {
+            "nda": "optional", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "core", "contractor": "optional", "saas": "none",
+            "dpa": "none", "partnership": "none"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "ip",
+      "label": "Intellectual Property",
+      "clauses": [
+        {
+          "id": "ip_ownership",
+          "label": "IP Ownership Assignment",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "core", "purchasing": "optional",
+            "employment": "core", "contractor": "core", "saas": "optional",
+            "dpa": "none", "partnership": "core"
+          }
+        },
+        {
+          "id": "joint_ip_ownership",
+          "label": "Joint IP Ownership",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "optional", "purchasing": "none",
+            "employment": "none", "contractor": "optional", "saas": "none",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "license_grant",
+          "label": "License Grant",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "optional", "purchasing": "none",
+            "employment": "none", "contractor": "none", "saas": "core",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "non_transferable_license",
+          "label": "Non-Transferable License",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "none", "contractor": "none", "saas": "core",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "irrevocable_license",
+          "label": "Irrevocable / Perpetual License",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "none", "contractor": "none", "saas": "optional",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "source_code_escrow",
+          "label": "Source Code Escrow",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "none", "sow": "none", "purchasing": "none",
+            "employment": "none", "contractor": "none", "saas": "core",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "affiliate_license_licensor",
+          "label": "Affiliate License – Licensor",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "none", "contractor": "none", "saas": "optional",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "affiliate_license_licensee",
+          "label": "Affiliate License – Licensee",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "none", "contractor": "none", "saas": "optional",
+            "dpa": "none", "partnership": "none"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "restrictive",
+      "label": "Restrictive Covenants",
+      "clauses": [
+        {
+          "id": "non_compete",
+          "label": "Non-Compete",
+          "source": "CUAD",
+          "presence": {
+            "nda": "optional", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "core", "contractor": "core", "saas": "none",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "exclusivity",
+          "label": "Exclusivity",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "optional",
+            "employment": "none", "contractor": "none", "saas": "optional",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "no_solicit_customers",
+          "label": "No-Solicit of Customers",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "core", "contractor": "core", "saas": "none",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "no_solicit_employees",
+          "label": "No-Solicit of Employees",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "none", "purchasing": "none",
+            "employment": "core", "contractor": "optional", "saas": "none",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "covenant_not_to_sue",
+          "label": "Covenant Not to Sue",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "optional", "contractor": "optional", "saas": "none",
+            "dpa": "none", "partnership": "none"
+          }
+        },
+        {
+          "id": "competitive_restriction_exception",
+          "label": "Competitive Restriction Exception",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "optional", "contractor": "optional", "saas": "none",
+            "dpa": "none", "partnership": "none"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "governance",
+      "label": "Governance & Operations",
+      "clauses": [
+        {
+          "id": "dispute_resolution",
+          "label": "Dispute Resolution",
+          "source": "Added (CUAD gap)",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "optional", "partnership": "core"
+          }
+        },
+        {
+          "id": "change_of_control",
+          "label": "Change of Control",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "none", "purchasing": "optional",
+            "employment": "optional", "contractor": "none", "saas": "core",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "anti_assignment",
+          "label": "Anti-Assignment",
+          "source": "CUAD",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "optional", "saas": "core",
+            "dpa": "optional", "partnership": "core"
+          }
+        },
+        {
+          "id": "audit_rights",
+          "label": "Audit Rights",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "none", "contractor": "optional", "saas": "core",
+            "dpa": "core", "partnership": "optional"
+          }
+        },
+        {
+          "id": "sla",
+          "label": "SLA / Service Levels",
+          "source": "Added (CUAD gap)",
+          "presence": {
+            "nda": "none", "msa": "core", "sow": "core", "purchasing": "optional",
+            "employment": "none", "contractor": "none", "saas": "core",
+            "dpa": "optional", "partnership": "none"
+          }
+        },
+        {
+          "id": "third_party_beneficiary",
+          "label": "Third Party Beneficiary",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "optional", "sow": "none", "purchasing": "optional",
+            "employment": "none", "contractor": "none", "saas": "optional",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "rofr",
+          "label": "ROFR / ROFO / ROFN",
+          "source": "CUAD",
+          "presence": {
+            "nda": "none", "msa": "none", "sow": "none", "purchasing": "optional",
+            "employment": "none", "contractor": "none", "saas": "none",
+            "dpa": "none", "partnership": "optional"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "remedies",
+      "label": "Remedies & Enforcement",
+      "clauses": [
+        {
+          "id": "remedies",
+          "label": "Remedies",
+          "source": "Added",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "none", "purchasing": "optional",
+            "employment": "optional", "contractor": "optional", "saas": "optional",
+            "dpa": "none", "partnership": "optional"
+          }
+        },
+        {
+          "id": "injunctive_relief",
+          "label": "Injunctive Relief",
+          "source": "Added",
+          "presence": {
+            "nda": "core", "msa": "optional", "sow": "none", "purchasing": "none",
+            "employment": "optional", "contractor": "optional", "saas": "optional",
+            "dpa": "none", "partnership": "none"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "boilerplate",
+      "label": "Boilerplate",
+      "clauses": [
+        {
+          "id": "entire_agreement",
+          "label": "Entire Agreement",
+          "source": "Added",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "amendment",
+          "label": "Amendment",
+          "source": "Added",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "severability",
+          "label": "Severability",
+          "source": "Added",
+          "presence": {
+            "nda": "core", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "core", "partnership": "core"
+          }
+        },
+        {
+          "id": "notices",
+          "label": "Notices",
+          "source": "Added",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "optional", "partnership": "core"
+          }
+        },
+        {
+          "id": "assignment",
+          "label": "Assignment",
+          "source": "Added",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "optional", "purchasing": "core",
+            "employment": "core", "contractor": "core", "saas": "core",
+            "dpa": "optional", "partnership": "core"
+          }
+        },
+        {
+          "id": "waiver",
+          "label": "Waiver",
+          "source": "Added",
+          "presence": {
+            "nda": "optional", "msa": "core", "sow": "none", "purchasing": "optional",
+            "employment": "optional", "contractor": "optional", "saas": "core",
+            "dpa": "none", "partnership": "optional"
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "other",
+      "label": "Other",
+      "clauses": [
+        {
+          "id": "other",
+          "label": "Other",
+          "source": "Catch-all",
+          "presence": {
+            "nda": "optional", "msa": "optional", "sow": "optional", "purchasing": "optional",
+            "employment": "optional", "contractor": "optional", "saas": "optional",
+            "dpa": "optional", "partnership": "optional"
+          }
+        }
+      ]
+    }
+  ]
+}

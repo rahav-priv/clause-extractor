@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.env
+venv/
+
+# Node / docx build
+node_modules/
+package-lock.json
+build-doc.js
+build-annotation-guide.js
+
+# Intermediate build artifacts
+*.docx
+.~lock.*
+
+# Logs and databases
+log
+*.db
+data/

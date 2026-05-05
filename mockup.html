@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Contract Viewer – Mockup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Top bar ── */
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
+    header .badge { background: #4f46e5; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+
+    /* ── Main layout ── */
+    .layout { display: flex; flex: 1; overflow: hidden; gap: 1px; background: #dde1e7; }
+
+    /* ── Panel base ── */
+    .panel { background: #fff; display: flex; flex-direction: column; overflow: hidden; }
+    .panel-header {
+      padding: 10px 12px 10px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-body { flex: 1; overflow-y: auto; }
+
+    /* ── Add contract button ── */
+    .btn-add {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .btn-add:hover { background: #4338ca; }
+    .btn-add svg { flex-shrink: 0; }
+
+    /* ── Panel 1: Contracts list ── */
+    .panel-contracts { width: 220px; flex-shrink: 0; }
+    .contract-item {
+      padding: 10px 10px 10px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+    .contract-item:hover { background: #f9fafb; }
+    .contract-item.active { background: #eef2ff; border-left: 3px solid #4f46e5; padding-left: 13px; }
+    .contract-item .contract-info { flex: 1; min-width: 0; }
+    .contract-item .name { font-size: 13px; font-weight: 500; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .contract-item .meta { font-size: 11px; color: #9ca3af; margin-top: 3px; display: flex; gap: 6px; }
+    .contract-item .fmt { background: #f3f4f6; border-radius: 3px; padding: 1px 5px; font-size: 10px; color: #6b7280; font-weight: 600; }
+
+    /* ── Delete button ── */
+    .btn-delete {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: #d1d5db;
+      cursor: pointer;
+      padding: 3px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s, background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .contract-item:hover .btn-delete { opacity: 1; }
+    .btn-delete:hover { color: #ef4444; background: #fee2e2; }
+
+    /* ── Panel 2: Document viewer ── */
+    .panel-document { flex: 1; min-width: 0; }
+    .doc-toolbar {
+      padding: 8px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      background: #fafafa;
+    }
+    .doc-toolbar .doc-title { font-size: 13px; font-weight: 600; color: #374151; flex: 1; }
+    .doc-toolbar .pill { font-size: 11px; background: #f3f4f6; color: #6b7280; padding: 2px 8px; border-radius: 10px; }
+    .doc-text {
+      padding: 24px 32px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #374151;
+      white-space: pre-wrap;
+      font-family: Georgia, serif;
+    }
+    .doc-text .highlight {
+      background: #fef08a;
+      border-radius: 2px;
+      outline: 2px solid #eab308;
+    }
+
+    /* ── Panel 3: Clauses ── */
+    .panel-right { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; }
+
+    .clause-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .clause-item:hover { background: #f9fafb; }
+    .clause-item.active { background: #eef2ff; border-left: 3px solid #4f46e5; }
+    .clause-item .clause-title { font-size: 13px; font-weight: 500; color: #111827; }
+    .clause-item .clause-type { font-size: 11px; margin-top: 3px; }
+    .clause-type-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .type-payment    { background: #d1fae5; color: #065f46; }
+    .type-termination{ background: #fee2e2; color: #991b1b; }
+    .type-confidentiality { background: #e0e7ff; color: #3730a3; }
+    .type-liability  { background: #fef3c7; color: #92400e; }
+    .type-governing  { background: #f3e8ff; color: #6b21a8; }
+
+    /* ── Metadata panel ── */
+    .metadata-panel {
+      border-top: 2px solid #e5e7eb;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      max-height: 45%;
+    }
+    .metadata-panel .panel-header { background: #f9fafb; }
+    .metadata-body { overflow-y: auto; padding: 12px; }
+    .entity-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 6px 0;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 12px;
+    }
+    .entity-row:last-child { border-bottom: none; }
+    .entity-type { color: #6b7280; font-weight: 600; text-transform: uppercase; font-size: 10px; padding-top: 1px; min-width: 90px; }
+    .entity-value { color: #111827; text-align: right; }
+    .entity-normalized { color: #6b7280; font-size: 10px; }
+
+    /* ── Empty state ── */
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #9ca3af;
+      font-size: 13px;
+      gap: 8px;
+    }
+    .empty .icon { font-size: 32px; }
+
+    /* ════════════════════════════════
+       MODAL OVERLAY
+    ════════════════════════════════ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      overflow: hidden;
+      transform: translateY(12px) scale(0.97);
+      transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+    .modal-head {
+      padding: 18px 20px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-head h2 { font-size: 15px; font-weight: 600; color: #111827; }
+    .modal-close {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 2px;
+      border-radius: 4px;
+      display: flex;
+      transition: color 0.15s, background 0.15s;
+    }
+    .modal-close:hover { color: #374151; background: #f3f4f6; }
+
+    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* ── Source option cards ── */
+    .source-option {
+      border: 2px solid #e5e7eb;
+      border-radius: 9px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .source-option:not(.disabled):hover {
+      border-color: #4f46e5;
+      background: #f5f3ff;
+    }
+    .source-option.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .source-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+    .icon-local   { background: #eff6ff; }
+    .icon-gdocs   { background: #f0fdf4; }
+    .icon-git     { background: #fdf4ff; }
+
+    .source-text .source-title { font-size: 13px; font-weight: 600; color: #111827; }
+    .source-text .source-desc  { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+    .coming-soon {
+      position: absolute;
+      top: 8px; right: 10px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f3f4f6;
+      color: #9ca3af;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    /* ── File drop zone (shown when local selected) ── */
+    .dropzone {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 2px dashed #c7d2fe;
+      border-radius: 9px;
+      padding: 28px 20px;
+      background: #f5f3ff;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .dropzone.visible { display: flex; }
+    .dropzone:hover, .dropzone.drag-over { border-color: #4f46e5; background: #eef2ff; }
+    .dropzone .dz-icon { font-size: 28px; }
+    .dropzone .dz-label { font-size: 13px; color: #374151; font-weight: 500; }
+    .dropzone .dz-sub { font-size: 11px; color: #6b7280; }
+    .dropzone .dz-browse { color: #4f46e5; font-weight: 600; text-decoration: underline; cursor: pointer; }
+    #fileInput { display: none; }
+
+    /* File selected state */
+    .file-selected {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid #4f46e5;
+      border-radius: 9px;
+      padding: 12px 16px;
+      background: #eef2ff;
+    }
+    .file-selected.visible { display: flex; }
+    .file-selected .fs-icon { font-size: 22px; }
+    .file-selected .fs-name { font-size: 13px; font-weight: 500; color: #111827; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-selected .fs-clear { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
+    .file-selected .fs-clear:hover { color: #ef4444; }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .btn-cancel {
+      background: #f3f4f6;
+      color: #374151;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-cancel:hover { background: #e5e7eb; }
+    .btn-upload {
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .btn-upload.ready { opacity: 1; pointer-events: all; }
+    .btn-upload.ready:hover { background: #4338ca; }
+
+    /* ════════════════════════════════
+       DELETE CONFIRM DIALOG
+    ════════════════════════════════ */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .confirm-overlay.open { opacity: 1; pointer-events: all; }
+
+    .confirm-dialog {
+      background: #fff;
+      border-radius: 10px;
+      width: 340px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+      padding: 24px 22px 18px;
+      transform: translateY(8px) scale(0.97);
+      transition: transform 0.15s;
+    }
+    .confirm-overlay.open .confirm-dialog { transform: translateY(0) scale(1); }
+    .confirm-dialog .cd-icon { font-size: 28px; margin-bottom: 10px; }
+    .confirm-dialog h3 { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 6px; }
+    .confirm-dialog p { font-size: 13px; color: #6b7280; line-height: 1.5; }
+    .confirm-dialog p strong { color: #374151; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .btn-confirm-cancel {
+      background: #f3f4f6; color: #374151; border: none; border-radius: 6px;
+      padding: 7px 16px; font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    .btn-confirm-cancel:hover { background: #e5e7eb; }
+    .btn-confirm-delete {
+      background: #ef4444; color: #fff; border: none; border-radius: 6px;
+      padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-confirm-delete:hover { background: #dc2626; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Contract Intelligence</h1>
+  <span class="badge">MOCKUP</span>
+</header>
+
+<div class="layout">
+
+  <!-- ── Panel 1: Contracts ── -->
+  <div class="panel panel-contracts">
+    <div class="panel-header">
+      <span>Contracts</span>
+      <button class="btn-add" onclick="openAddModal()">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Add
+      </button>
+    </div>
+    <div class="panel-body" id="contractList">
+
+      <div class="contract-item active">
+        <div class="contract-info">
+          <div class="name">ServiceAgreement_2024.pdf</div>
+          <div class="meta"><span class="fmt">PDF</span> Jan 12, 2024</div>
+        </div>
+        <button class="btn-delete" title="Delete contract" onclick="confirmDelete(this, 'ServiceAgreement_2024.pdf')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1.75 3.5h10.5M5.25 3.5V2.333a.583.583 0 0 1 .583-.583h2.334a.583.583 0 0 1 .583.583V3.5m1.75 0-.583 7.583a.583.583 0 0 1-.584.584H4.667a.583.583 0 0 1-.584-.584L3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="contract-item">
+        <div class="contract-info">
+          <div class="name">VendorContract_Acme.docx</div>
+          <div class="meta"><span class="fmt">DOCX</span> Mar 5, 2024</div>
+        </div>
+        <button class="btn-delete" title="Delete contract" onclick="confirmDelete(this, 'VendorContract_Acme.docx')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1.75 3.5h10.5M5.25 3.5V2.333a.583.583 0 0 1 .583-.583h2.334a.583.583 0 0 1 .583.583V3.5m1.75 0-.583 7.583a.583.583 0 0 1-.584.584H4.667a.583.583 0 0 1-.584-.584L3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="contract-item">
+        <div class="contract-info">
+          <div class="name">NDA_TechCorp_2023.pdf</div>
+          <div class="meta"><span class="fmt">PDF</span> Nov 3, 2023</div>
+        </div>
+        <button class="btn-delete" title="Delete contract" onclick="confirmDelete(this, 'NDA_TechCorp_2023.pdf')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1.75 3.5h10.5M5.25 3.5V2.333a.583.583 0 0 1 .583-.583h2.334a.583.583 0 0 1 .583.583V3.5m1.75 0-.583 7.583a.583.583 0 0 1-.584.584H4.667a.583.583 0 0 1-.584-.584L3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="contract-item">
+        <div class="contract-info">
+          <div class="name">LicenseAgreement_v2.pdf</div>
+          <div class="meta"><span class="fmt">PDF</span> Feb 28, 2024</div>
+        </div>
+        <button class="btn-delete" title="Delete contract" onclick="confirmDelete(this, 'LicenseAgreement_v2.pdf')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1.75 3.5h10.5M5.25 3.5V2.333a.583.583 0 0 1 .583-.583h2.334a.583.583 0 0 1 .583.583V3.5m1.75 0-.583 7.583a.583.583 0 0 1-.584.584H4.667a.583.583 0 0 1-.584-.584L3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="contract-item">
+        <div class="contract-info">
+          <div class="name">EmploymentContract_JD.docx</div>
+          <div class="meta"><span class="fmt">DOCX</span> Apr 1, 2024</div>
+        </div>
+        <button class="btn-delete" title="Delete contract" onclick="confirmDelete(this, 'EmploymentContract_JD.docx')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1.75 3.5h10.5M5.25 3.5V2.333a.583.583 0 0 1 .583-.583h2.334a.583.583 0 0 1 .583.583V3.5m1.75 0-.583 7.583a.583.583 0 0 1-.584.584H4.667a.583.583 0 0 1-.584-.584L3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Panel 2: Document viewer ── -->
+  <div class="panel panel-document">
+    <div class="doc-toolbar">
+      <span class="doc-title">ServiceAgreement_2024.pdf</span>
+      <span class="pill">Page 2 of 8</span>
+      <span class="pill">12 clauses</span>
+    </div>
+    <div class="panel-body">
+      <div class="doc-text">
+MASTER SERVICE AGREEMENT
+
+This Master Service Agreement ("Agreement") is entered into as of January 12, 2024 between Acme Corp ("Client") and TechSolutions Ltd ("Service Provider").
+
+1. SERVICES
+The Service Provider agrees to provide software development and consulting services as outlined in Exhibit A. All deliverables shall meet the specifications agreed upon in writing by both parties.
+
+2. PAYMENT TERMS
+<span class="highlight">Client agrees to pay Service Provider a monthly retainer fee of $15,000 USD, due within 30 days of invoice. Late payments shall accrue interest at a rate of 1.5% per month. In the event of non-payment exceeding 60 days, Service Provider reserves the right to suspend services.</span>
+
+3. TERM AND TERMINATION
+This Agreement shall commence on January 12, 2024 and continue for a period of 24 months unless terminated earlier. Either party may terminate this Agreement with 30 days written notice.
+
+4. CONFIDENTIALITY
+Each party agrees to maintain the confidentiality of the other party's proprietary information and trade secrets. This obligation shall survive termination of this Agreement for a period of 5 years.
+
+5. LIMITATION OF LIABILITY
+In no event shall either party be liable for indirect, incidental, or consequential damages. Total liability shall not exceed the fees paid in the 3 months preceding the claim.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel 3: Clauses + Metadata ── -->
+  <div class="panel panel-right">
+
+    <div class="panel-header"><span>Clauses</span></div>
+    <div class="panel-body" style="flex: 1; overflow-y: auto;">
+
+      <div class="clause-item">
+        <div class="clause-title">1. Services</div>
+        <div class="clause-type"><span class="clause-type-badge type-governing">Scope</span></div>
+      </div>
+
+      <div class="clause-item active">
+        <div class="clause-title">2. Payment Terms</div>
+        <div class="clause-type"><span class="clause-type-badge type-payment">Payment</span></div>
+      </div>
+
+      <div class="clause-item">
+        <div class="clause-title">3. Term and Termination</div>
+        <div class="clause-type"><span class="clause-type-badge type-termination">Termination</span></div>
+      </div>
+
+      <div class="clause-item">
+        <div class="clause-title">4. Confidentiality</div>
+        <div class="clause-type"><span class="clause-type-badge type-confidentiality">Confidentiality</span></div>
+      </div>
+
+      <div class="clause-item">
+        <div class="clause-title">5. Limitation of Liability</div>
+        <div class="clause-type"><span class="clause-type-badge type-liability">Liability</span></div>
+      </div>
+
+    </div>
+
+    <!-- Metadata for selected clause -->
+    <div class="metadata-panel">
+      <div class="panel-header"><span>Clause Entities — Payment Terms</span></div>
+      <div class="metadata-body">
+
+        <div class="entity-row">
+          <span class="entity-type">Amount</span>
+          <span class="entity-value">
+            $15,000 USD / month
+            <div class="entity-normalized">15000.00 USD</div>
+          </span>
+        </div>
+
+        <div class="entity-row">
+          <span class="entity-type">Due Date</span>
+          <span class="entity-value">30 days after invoice</span>
+        </div>
+
+        <div class="entity-row">
+          <span class="entity-type">Interest Rate</span>
+          <span class="entity-value">1.5% per month</span>
+        </div>
+
+        <div class="entity-row">
+          <span class="entity-type">Penalty Term</span>
+          <span class="entity-value">Suspension after 60 days</span>
+        </div>
+
+        <div class="entity-row">
+          <span class="entity-type">Party</span>
+          <span class="entity-value">Acme Corp (Client)</span>
+        </div>
+
+        <div class="entity-row">
+          <span class="entity-type">Party</span>
+          <span class="entity-value">TechSolutions Ltd (Provider)</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════
+     ADD CONTRACT MODAL
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="addModal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+
+    <div class="modal-head">
+      <h2>Add Contract</h2>
+      <button class="modal-close" onclick="closeAddModal()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M12 4 4 12M4 4l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p style="font-size:12px;color:#6b7280;margin-bottom:4px;">Choose a source to import from:</p>
+
+      <!-- Local file -->
+      <div class="source-option" id="optLocal" onclick="selectSource('local')">
+        <div class="source-icon icon-local">📄</div>
+        <div class="source-text">
+          <div class="source-title">Local File</div>
+          <div class="source-desc">Upload a PDF or DOCX from your computer</div>
+        </div>
+      </div>
+
+      <!-- Google Docs -->
+      <div class="source-option disabled" title="Coming soon">
+        <div class="source-icon icon-gdocs">📝</div>
+        <div class="source-text">
+          <div class="source-title">Google Docs</div>
+          <div class="source-desc">Import directly from your Google Drive</div>
+        </div>
+        <span class="coming-soon">Coming soon</span>
+      </div>
+
+      <!-- Git -->
+      <div class="source-option disabled" title="Coming soon">
+        <div class="source-icon icon-git">🔗</div>
+        <div class="source-text">
+          <div class="source-title">Git Repository</div>
+          <div class="source-desc">Pull contracts from a Git repo path</div>
+        </div>
+        <span class="coming-soon">Coming soon</span>
+      </div>
+
+      <!-- Drop zone (shown after Local is selected) -->
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc" onchange="handleFileSelect(event)" />
+      <div class="dropzone" id="dropzone"
+           onclick="document.getElementById('fileInput').click()"
+           ondragover="handleDragOver(event)"
+           ondragleave="handleDragLeave(event)"
+           ondrop="handleDrop(event)">
+        <div class="dz-icon">📂</div>
+        <div class="dz-label">Drop your file here or <span class="dz-browse">browse</span></div>
+        <div class="dz-sub">Supported formats: PDF, DOCX — max 50 MB</div>
+      </div>
+
+      <!-- File selected confirmation -->
+      <div class="file-selected" id="fileSelected">
+        <span class="fs-icon" id="fileIcon">📄</span>
+        <span class="fs-name" id="fileName">—</span>
+        <button class="fs-clear" title="Remove" onclick="clearFile()">✕</button>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="btn-upload" id="btnUpload" onclick="doUpload()">Upload</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     DELETE CONFIRM DIALOG
+════════════════════════════════════════ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-dialog">
+    <div class="cd-icon">🗑️</div>
+    <h3>Delete contract?</h3>
+    <p>This will permanently remove <strong id="confirmFileName"></strong>. This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-confirm-delete" onclick="doDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Add modal ── */
+  let selectedFile = null;
+
+  function openAddModal() {
+    resetModal();
+    document.getElementById('addModal').classList.add('open');
+  }
+  function closeAddModal() {
+    document.getElementById('addModal').classList.remove('open');
+  }
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('addModal')) closeAddModal();
+  }
+  function resetModal() {
+    selectedFile = null;
+    document.getElementById('optLocal').style.outline = '';
+    document.getElementById('dropzone').classList.remove('visible');
+    document.getElementById('fileSelected').classList.remove('visible');
+    document.getElementById('btnUpload').classList.remove('ready');
+    document.getElementById('fileInput').value = '';
+  }
+
+  function selectSource(src) {
+    if (src !== 'local') return;
+    document.getElementById('optLocal').style.outline = '2px solid #4f46e5';
+    document.getElementById('dropzone').classList.add('visible');
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) setFile(file);
+  }
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('dropzone').classList.add('drag-over');
+  }
+  function handleDragLeave() {
+    document.getElementById('dropzone').classList.remove('drag-over');
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropzone').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) setFile(file);
+  }
+  function setFile(file) {
+    selectedFile = file;
+    const ext = file.name.split('.').pop().toLowerCase();
+    document.getElementById('fileIcon').textContent = ext === 'pdf' ? '📕' : '📘';
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('dropzone').classList.remove('visible');
+    document.getElementById('fileSelected').classList.add('visible');
+    document.getElementById('btnUpload').classList.add('ready');
+  }
+  function clearFile() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileSelected').classList.remove('visible');
+    document.getElementById('dropzone').classList.add('visible');
+    document.getElementById('btnUpload').classList.remove('ready');
+  }
+  function doUpload() {
+    if (!selectedFile) return;
+    // Mock: add to list
+    const ext = selectedFile.name.split('.').pop().toUpperCase();
+    const today = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    const list = document.getElementById('contractList');
+    const el = document.createElement('div');
+    el.className = 'contract-item';
+    el.innerHTML = `
+      <div class="contract-info">
+        <div class="name" title="${selectedFile.name}">${selectedFile.name}</div>
+        <div class="meta"><span class="fmt">${ext}</span> ${today}</div>
+      </div>
+      <button class="btn-delete" title="Delete contract" onclick="confirmDelete(this, '${selectedFile.name.replace(/'/g,"\\'")}')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1.75 3.5h10.5M5.25 3.5V2.333a.583.583 0 0 1 .583-.583h2.334a.583.583 0 0 1 .583.583V3.5m1.75 0-.583 7.583a.583.583 0 0 1-.584.584H4.667a.583.583 0 0 1-.584-.584L3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>`;
+    list.appendChild(el);
+    closeAddModal();
+  }
+
+  /* ── Delete confirm ── */
+  let pendingDeleteBtn = null;
+
+  function confirmDelete(btn, name) {
+    pendingDeleteBtn = btn;
+    document.getElementById('confirmFileName').textContent = name;
+    document.getElementById('confirmOverlay').classList.add('open');
+  }
+  function closeConfirm() {
+    pendingDeleteBtn = null;
+    document.getElementById('confirmOverlay').classList.remove('open');
+  }
+  function doDelete() {
+    if (pendingDeleteBtn) {
+      pendingDeleteBtn.closest('.contract-item').remove();
+    }
+    closeConfirm();
+  }
+
+  // Close confirm on overlay click
+  document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeConfirm();
+  });
+</script>
+
+</body>
+</html>
