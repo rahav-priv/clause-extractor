@@ -123,6 +123,56 @@ Interactive Swagger docs are available at **http://localhost:6363/docs** when th
 
 ---
 
+## Database Design
+
+### Tables
+
+**`contracts`** — top-level document record
+- Stores filename, upload date, raw extracted text, and the contract type classification with its confidence score, evidence phrases, and ambiguity flags
+- `raw_text` stores the full contract text — clause highlighting in the UI works by referencing character offsets into this column
+
+**`clauses`** — one row per extracted clause
+- Linked to `contracts` via `contract_id` (indexed)
+- Stores clause type, `span_start` / `span_end` (character offsets into `raw_text`), confidence, evidence, and ambiguity flags
+- Spans are exact because Claude receives pre-parsed section indices, not raw text positions
+
+**`entities`** — one row per extracted entity within a clause
+- Linked to `clauses` via `clause_id` (indexed)
+- Stores `entity_name` (e.g. `amount`, `jurisdiction`), `value_json`, confidence, evidence, and ambiguity flags
+
+### Design Decisions
+
+**Three-level normalized hierarchy (Contract → Clause → Entity)**
+Rather than storing clauses and entities as JSON blobs on the contract row, the data is normalized into three tables. This makes cross-contract queries possible without JSON parsing in the application layer.
+
+**Spans as character offsets**
+`span_start` and `span_end` are offsets into `raw_text`, not page or line numbers. The pre-parsing step splits the contract into sections before sending to Claude, so Claude returns section indices that map back to exact character positions — no guessing or fuzzy matching.
+
+**JSON stored as TEXT columns**
+`evidence`, `ambiguity_flags`, and `value_json` are JSON strings stored in TEXT columns (SQLite has no native JSON type). The `_parse_json_list()` and `_parse_json_value()` helpers handle safe deserialization with fallbacks to avoid crashing on malformed data.
+
+**Cascade deletes**
+Both relationships use `cascade="all, delete-orphan"` — deleting a contract automatically removes all its clauses and entities, handled at the ORM level by SQLAlchemy.
+
+**Flat entity rows over JSON dict**
+Entities are stored as individual rows rather than a JSON dict on the clause. This makes them queryable by entity type and extensible without schema changes.
+
+---
+
+## Taxonomy
+
+The contract type and clause type lists are grounded in established industry sources, documented in `contract-taxonomy.json`:
+
+| Source | What it contributed |
+|--------|-------------------|
+| **CUAD v1** | Academic dataset of 500 commercial contracts with 41 labelled clause types, created by legal experts at Atticus |
+| **WorldCC Most Negotiated Terms 2022** | Industry report identifying the clauses most commonly negotiated in B2B contracts globally |
+| **Ironclad, Agiloft, Sirion** | Leading CLM platforms whose out-of-the-box clause libraries reflect what enterprise legal teams care about in practice |
+
+Each clause in the taxonomy has a `presence` matrix (`core` / `optional` / `N/A`) for each of the 9 contract types, and NDA confidentiality is split into 4 specific sub-types (`Definition`, `Exclusions`, `Obligations`, `General`) to improve extraction precision.
+
+---
+
 ## AI Usage
 
 Claude was used throughout the development of this project, both as a tool embedded in the product and as a development assistant.

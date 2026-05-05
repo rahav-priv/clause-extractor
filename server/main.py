@@ -234,6 +234,7 @@ def get_extraction(document_id: int, db: Session = Depends(get_db)):
     description="Accepts a PDF file, extracts its text, classifies clauses using Claude, and persists the results.",
     responses={
         400: {"description": "Unsupported file type"},
+        409: {"description": "Duplicate contract — same content already uploaded"},
         413: {"description": "File too large (max 20 MB)"},
         422: {"description": "PDF could not be parsed or contains no extractable text"},
         500: {"description": "Claude extraction error"},
@@ -269,6 +270,14 @@ async def extract_contract(
                    "OCR is not yet supported.",
         )
 
+    # Duplicate check — compare raw text before calling Claude
+    existing = db.query(Contract).filter(Contract.raw_text == raw_text).first()
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail=f"This contract has already been uploaded (id={existing.id}, filename='{existing.filename}').",
+        )
+
     # Extract clauses via Claude
     try:
         extraction = extract_clauses(raw_text)
@@ -294,7 +303,7 @@ async def extract_contract(
     for cl_data in extraction.get("clauses", []):
         clause = Clause(
             contract_id=contract.id,
-            clause_type=cl_data.get("clause_type", "Other"),
+            clause_type=cl_data.get("clause_type", "Unknown_Type"),
             span_start=cl_data.get("span_start", 0),
             span_end=cl_data.get("span_end", 0),
             confidence=cl_data.get("confidence"),
