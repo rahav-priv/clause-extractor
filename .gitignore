@@ -11,6 +11,7 @@ build-annotation-guide.js
 
 # Intermediate build artifacts
 *.docx
+!overview.docx
 .~lock.*
 
 # Logs and databases
