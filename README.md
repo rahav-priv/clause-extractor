@@ -2,6 +2,9 @@
 
 An AI-powered system that extracts and classifies clauses from legal contracts. Upload a PDF contract and get back a structured breakdown of the contract type, individual clauses, and their key entities — all powered by Claude.
 
+An overview of the project can be found [here](https://1drv.ms/v/c/4a796844be07434c/IQCHf7huKm4pQrngOHoVpQG5AXwnvsCcbdBtSx4n_7CrXWo?e=1mmMWU).
+
+
 ---
 
 ## How It Works
